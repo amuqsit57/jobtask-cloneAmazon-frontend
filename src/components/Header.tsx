@@ -207,9 +207,11 @@ export function Header() {
           className="nav-item shrink-0 flex-row items-end"
           aria-label={`Cart, ${cart.count} items`}
         >
-          <span className="relative">
-            <ShoppingCart size={30} />
-            <span className="absolute -top-1 left-4 text-[15px] font-bold text-[var(--color-amazon-orange)]">
+          {/* The count sits over the cart's basket. Centring on a fixed anchor
+              keeps double-digit counts from drifting off the icon. */}
+          <span className="relative block">
+            <ShoppingCart size={30} strokeWidth={1.75} />
+            <span className="absolute left-1/2 top-[-2px] min-w-[14px] -translate-x-1/2 text-center text-[14px] font-bold leading-none text-[var(--color-amazon-orange)]">
               {cart.count}
             </span>
           </span>

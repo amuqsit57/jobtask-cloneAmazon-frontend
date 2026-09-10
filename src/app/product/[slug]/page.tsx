@@ -49,7 +49,7 @@ export default async function ProductPage({
 
   return (
     <div className="bg-white">
-      <div className="mx-auto max-w-[1500px] px-4 py-3 lg:px-6">
+      <div className="mx-auto max-w-[1500px] px-5 py-4 sm:px-8 lg:px-12 xl:px-16">
         <nav className="mb-3 text-[12px] text-[var(--color-text-secondary)]">
           <Link href="/" className="link-amazon">
             Home
@@ -64,7 +64,7 @@ export default async function ProductPage({
           )}
         </nav>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)_300px] lg:gap-10 xl:gap-12">
           <ProductGallery images={product.images} title={product.title} />
 
           {/* --- centre column --- */}
@@ -139,7 +139,7 @@ export default async function ProductPage({
             {product.bullets.length > 0 && (
               <div className="py-3">
                 <h2 className="mb-2 text-[16px] font-bold">About this item</h2>
-                <ul className="list-disc space-y-1.5 pl-5 text-[14px] leading-5">
+                <ul className="max-w-2xl list-disc space-y-2 pl-5 text-[14px] leading-6">
                   {product.bullets.map((b, i) => (
                     <li key={i}>{b}</li>
                   ))}
@@ -163,7 +163,7 @@ export default async function ProductPage({
         <section id="reviews" className="mt-8 border-t border-gray-200 pt-6">
           <h2 className="mb-4 text-[21px] font-bold">Customer reviews</h2>
 
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-12">
             <div>
               <div className="mb-2 flex items-center gap-2">
                 <Stars rating={product.rating} size={20} />

@@ -22,9 +22,9 @@ export function ProductGallery({
   }
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-4">
       {images.length > 1 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex shrink-0 flex-col gap-2">
           {images.map((src, i) => (
             <button
               key={src}
