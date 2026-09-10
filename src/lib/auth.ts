@@ -52,6 +52,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: data.user.email,
           name: data.user.name,
           apiToken: data.token,
+          role: data.user.role ?? 'customer',
+          storeName: data.user.storeName ?? null,
         };
       },
     }),
@@ -59,14 +61,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.apiToken = (user as { apiToken?: string }).apiToken;
+        const u = user as {
+          apiToken?: string;
+          role?: 'customer' | 'seller' | 'admin';
+          storeName?: string | null;
+        };
+        token.apiToken = u.apiToken;
         token.userId = user.id;
+        token.role = u.role ?? 'customer';
+        token.storeName = u.storeName ?? null;
       }
       return token;
     },
     async session({ session, token }) {
       session.apiToken = token.apiToken as string;
-      if (session.user) session.user.id = token.userId as string;
+      if (session.user) {
+        session.user.id = token.userId as string;
+        session.user.role =
+          (token.role as 'customer' | 'seller' | 'admin') ?? 'customer';
+        session.user.storeName = (token.storeName as string | null) ?? null;
+      }
       return session;
     },
   },

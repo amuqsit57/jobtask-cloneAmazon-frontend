@@ -9,8 +9,10 @@ assignment. Next.js 16 (App Router), React 19, Tailwind 4, NextAuth v5.
 
 ## What works
 
-Every flow below is complete end to end against a real Postgres database,
-covered by 121 passing assertions across three test suites.
+Three roles, all complete end to end against a real Postgres database, covered
+by **175 passing assertions** across four test suites.
+
+### Customer
 
 | Flow | Detail |
 |---|---|
@@ -28,8 +30,51 @@ covered by 121 passing assertions across three test suites.
 | **Returns** | Request against a delivered line, pick a reason, see the refund; stock is restocked |
 | **Prime** | Join or cancel; membership makes the upgrade shipping tiers free |
 
-Try it with the demo account: `demo@example.com` / `Password123!`
-Promo codes seeded for testing: `SAVE10`, `WELCOME5`, `BIGDEAL20`, `FREESHIP`.
+### Seller — Seller Central
+
+| Flow | Detail |
+|---|---|
+| **Dashboard** | Revenue, units, 30-day sales chart, low stock, best sellers |
+| **Products** | List, create, edit price and stock inline, archive |
+| **New listing** | Full form; submits for admin review rather than going live |
+| **Orders** | Only lines containing their products; confirm shipment with tracking |
+| **Inventory** | Bulk stock management with low-stock highlighting |
+
+### Admin — Admin Console
+
+| Flow | Detail |
+|---|---|
+| **Overview** | Platform GMV, user counts, per-seller revenue table |
+| **Moderation** | Approve, reject with a reason, or archive any listing |
+| **Users** | Every account, lifetime spend, promote or demote roles |
+| **Orders** | All orders across the platform |
+| **Audit log** | Every moderation decision and role change, attributed |
+
+### The marketplace loop
+
+The thing that makes this a marketplace rather than a shop:
+
+> A seller creates a listing → it is **invisible** in customer search while pending
+> → an admin approves it → it appears in search → a customer buys it → the sale
+> lands on the seller dashboard → the seller ships it with tracking.
+
+Every step of that is asserted in `test/roles.mjs`.
+
+---
+
+## Demo accounts
+
+All use the password `Password123!`
+
+| Email | Role | |
+|---|---|---|
+| `demo@example.com` | Customer | Has order history |
+| `seller@example.com` | Seller | Nova Retail Group — 7 products |
+| `seller2@example.com` | Seller | Harbor Home & Kitchen — 5 products |
+| `seller3@example.com` | Seller | Meridian Supply Co. — 8 products |
+| `admin@example.com` | Admin | Full console access |
+
+Promo codes: `SAVE10`, `WELCOME5`, `BIGDEAL20`, `FREESHIP`.
 
 ---
 
@@ -42,14 +87,15 @@ then said no to the rest.
 
 Cut, with reasoning:
 
-- **Seller / marketplace portal** — the biggest honest gap. Amazon is a two-sided
-  marketplace and this rebuild only has the buyer side. A seller app means its own
-  auth role, catalog management, inventory, order fulfilment and payout reporting:
-  a second application, not a section.
-- **Admin console** — catalog moderation, policy enforcement, agent tooling.
-  Internal-only, and CRUD whose value is hard to show in a walkthrough.
-- **Delivery / driver app** — Amazon Flex is mobile-first: route claiming, package
-  scanning, proof-of-delivery photos. Poorly served by a browser rebuild.
+- **Delivery / driver app** — Amazon Flex is mobile-first: claiming route blocks,
+  scanning packages, capturing proof-of-delivery photos, working offline in a van
+  with no signal. A browser version would be a list with a "mark delivered"
+  button, which misses everything that makes the real thing work. This is the one
+  role that genuinely needs a different platform, so it was cut deliberately.
+- **Seller advertising, FBA and payouts** — Sponsored Products with keyword
+  bidding, fulfilment-by-Amazon shipment workflows, payout reconciliation with
+  fee breakdowns, account health metrics. Each is a product in its own right; the
+  seller area covers listing, inventory, orders and analytics instead.
 - **Prime Video / Music / Alexa / Fresh** — separate products that happen to share
   a login. No overlap with the purchase flow.
 - **Real payment processing** — Stripe is well-understood plumbing. Checkout

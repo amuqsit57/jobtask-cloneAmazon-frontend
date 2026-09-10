@@ -122,7 +122,7 @@ export function BuyBox({ product }: { product: Product }) {
         </div>
         <div className="flex gap-2">
           <dt className="w-20 shrink-0 text-[var(--color-text-secondary)]">Sold by</dt>
-          <dd>{product.brand ?? 'Amazon.com'}</dd>
+          <dd>{product.storeName ?? product.brand ?? 'Amazon.com'}</dd>
         </div>
         <div className="flex gap-2">
           <dt className="w-20 shrink-0 text-[var(--color-text-secondary)]">Returns</dt>

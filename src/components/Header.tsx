@@ -168,6 +168,23 @@ export function Header() {
                 <p className="mb-2 border-b pb-2 font-bold">
                   Hello, {session.user?.name}
                 </p>
+                {(session.user?.role === "seller" ||
+                  session.user?.role === "admin") && (
+                  <Link
+                    href="/seller"
+                    className="mb-2 block rounded bg-[#232F3E] px-2 py-1.5 text-center font-bold text-white hover:bg-[#37475A]"
+                  >
+                    Seller Central
+                  </Link>
+                )}
+                {session.user?.role === "admin" && (
+                  <Link
+                    href="/admin"
+                    className="mb-2 block rounded bg-[#B12704] px-2 py-1.5 text-center font-bold text-white hover:bg-[#8a1e03]"
+                  >
+                    Admin Console
+                  </Link>
+                )}
                 <Link href="/orders" className="block py-1 link-amazon">
                   Your Orders
                 </Link>

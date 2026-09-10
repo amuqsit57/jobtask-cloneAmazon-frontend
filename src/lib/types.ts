@@ -31,6 +31,13 @@ export interface Product {
   related?: Product[];
   questions?: Question[];
   wishlistItemId?: number;
+  status?: 'active' | 'pending' | 'rejected' | 'archived';
+  rejectionReason?: string | null;
+  unitsSold?: number;
+  sellerId?: number | null;
+  storeName?: string | null;
+  storeSlug?: string | null;
+  sellerEmail?: string | null;
 }
 
 export interface Review {
@@ -181,4 +188,91 @@ export interface PrimeStatus {
   since: string | null;
   priceFormatted: string;
   benefits: string[];
+}
+
+export type Role = 'customer' | 'seller' | 'admin';
+
+export interface SellerStats {
+  revenue: number;
+  revenueFormatted: string;
+  revenue30d: number;
+  revenue30dFormatted: string;
+  unitsSold: number;
+  orderCount: number;
+  pendingShipments: number;
+  productsByStatus: { active: number; pending: number; rejected: number; archived: number };
+  lowStock: { id: number; slug: string; title: string; stock: number }[];
+  salesByDay: { day: string; revenue: number }[];
+  topProducts: {
+    id: number; slug: string; title: string; stock: number; image: string | null;
+    units: number; revenue: number; revenueFormatted: string;
+  }[];
+}
+
+export interface SellerOrderLine {
+  id: number;
+  orderNumber: string;
+  placedAt: string;
+  buyerName: string | null;
+  shipTo: Address;
+  productId: number | null;
+  slug: string | null;
+  title: string;
+  image: string | null;
+  quantity: number;
+  unitPrice: number;
+  unitPriceFormatted: string;
+  lineTotal: number;
+  lineTotalFormatted: string;
+  fulfillmentStatus: 'unshipped' | 'shipped' | 'delivered' | 'cancelled';
+  shippedAt: string | null;
+  trackingNumber: string | null;
+}
+
+export interface AdminStats {
+  gmv: number;
+  gmvFormatted: string;
+  orderCount: number;
+  users: { customers: number; sellers: number; admins: number };
+  products: { active: number; pending: number; rejected: number; archived: number };
+  revenueByDay: { day: string; revenue: number }[];
+  sellers: {
+    id: number; storeName: string | null; email: string;
+    products: number; revenue: number; revenueFormatted: string;
+  }[];
+}
+
+export interface AdminUser {
+  id: number;
+  email: string;
+  name: string;
+  role: Role;
+  storeName: string | null;
+  isPrime: boolean;
+  createdAt: string;
+  orderCount: number;
+  lifetimeSpend: number;
+  lifetimeSpendFormatted: string;
+}
+
+export interface AdminAction {
+  id: number;
+  adminName: string | null;
+  action: string;
+  targetType: string;
+  targetId: number | null;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface AdminOrder {
+  id: number;
+  orderNumber: string;
+  buyerEmail: string | null;
+  buyerName: string | null;
+  placedAt: string;
+  status: string;
+  lineCount: number;
+  total: number;
+  totalFormatted: string;
 }

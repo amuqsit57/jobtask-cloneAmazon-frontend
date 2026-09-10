@@ -11,6 +11,12 @@ import type {
   Review,
   ReturnRequest,
   Wishlist,
+  SellerStats,
+  SellerOrderLine,
+  AdminStats,
+  AdminUser,
+  AdminAction,
+  AdminOrder,
 } from './types';
 
 export const API_BASE =
@@ -294,3 +300,108 @@ export const requestReturn = (
     body: JSON.stringify(payload),
     token,
   });
+
+// ---- seller ---------------------------------------------------------------
+
+export const getSellerStats = (token: string) =>
+  request<SellerStats>('/seller/stats', { token });
+
+export const getSellerProducts = (token: string) =>
+  request<{ products: Product[] }>('/seller/products', { token });
+
+export const createSellerProduct = (
+  payload: {
+    title: string; brand?: string; description?: string; bullets?: string[];
+    categoryId?: number | null; price: number; listPrice?: number | null;
+    stock: number; images?: string[];
+  },
+  token: string
+) =>
+  request<{ product: Product; message: string }>('/seller/products', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    token,
+  });
+
+export const updateSellerProduct = (
+  id: number,
+  patch: Record<string, unknown>,
+  token: string
+) =>
+  request<{ product: Product }>(`/seller/products/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+    token,
+  });
+
+export const archiveSellerProduct = (id: number, token: string) =>
+  request<{ archived: boolean }>(`/seller/products/${id}`, {
+    method: 'DELETE',
+    token,
+  });
+
+export const getSellerOrders = (token: string) =>
+  request<{ orders: SellerOrderLine[] }>('/seller/orders', { token });
+
+export const shipSellerOrder = (
+  itemId: number,
+  trackingNumber: string | undefined,
+  token: string
+) =>
+  request<{ item: { id: number; fulfillmentStatus: string; trackingNumber: string } }>(
+    `/seller/orders/${itemId}/ship`,
+    { method: 'POST', body: JSON.stringify({ trackingNumber }), token }
+  );
+
+export const updateSellerStock = (id: number, stock: number, token: string) =>
+  request<{ id: number; stock: number }>(`/seller/inventory/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ stock }),
+    token,
+  });
+
+// ---- admin ----------------------------------------------------------------
+
+export const getAdminStats = (token: string) =>
+  request<AdminStats>('/admin/stats', { token });
+
+export const getAdminProducts = (token: string, status?: string) =>
+  request<{ products: Product[] }>(
+    `/admin/products${status ? `?status=${status}` : ''}`,
+    { token }
+  );
+
+export const moderateProduct = (
+  id: number,
+  decision: 'approve' | 'reject' | 'archive',
+  reason: string | undefined,
+  token: string
+) =>
+  request<{ product: Product }>(`/admin/products/${id}/moderate`, {
+    method: 'POST',
+    body: JSON.stringify({ decision, reason }),
+    token,
+  });
+
+export const getAdminUsers = (token: string, role?: string) =>
+  request<{ users: AdminUser[] }>(`/admin/users${role ? `?role=${role}` : ''}`, {
+    token,
+  });
+
+export const setUserRole = (
+  id: number,
+  role: string,
+  storeName: string | undefined,
+  token: string
+) =>
+  request<{ user: AdminUser }>(`/admin/users/${id}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role, storeName }),
+    token,
+  });
+
+export const getAdminOrders = (token: string) =>
+  request<{ orders: AdminOrder[] }>('/admin/orders', { token });
+
+export const getAdminActions = (token: string) =>
+  request<{ actions: AdminAction[] }>('/admin/actions', { token });

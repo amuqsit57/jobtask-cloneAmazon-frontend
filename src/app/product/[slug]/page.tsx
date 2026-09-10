@@ -74,14 +74,24 @@ export default async function ProductPage({
           <div className="min-w-0">
             <h1 className="text-[24px] font-normal leading-8">{product.title}</h1>
 
-            {product.brand && (
-              <Link
-                href={`/s?q=${encodeURIComponent(product.brand)}`}
-                className="text-[14px] link-amazon"
-              >
-                Visit the {product.brand} Store
-              </Link>
-            )}
+            <div className="flex flex-wrap items-center gap-x-3 text-[14px]">
+              {product.brand && (
+                <Link
+                  href={`/s?q=${encodeURIComponent(product.brand)}`}
+                  className="link-amazon"
+                >
+                  Visit the {product.brand} Store
+                </Link>
+              )}
+              {product.storeName && (
+                <span className="text-[13px] text-[var(--color-text-secondary)]">
+                  Sold by{" "}
+                  <span className="font-bold text-[var(--color-text-primary)]">
+                    {product.storeName}
+                  </span>
+                </span>
+              )}
+            </div>
 
             <div className="mt-1 flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3">
               <Stars rating={product.rating} size={16} />
