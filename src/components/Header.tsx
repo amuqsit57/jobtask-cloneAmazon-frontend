@@ -171,6 +171,15 @@ export function Header() {
                 <Link href="/orders" className="block py-1 link-amazon">
                   Your Orders
                 </Link>
+                <Link href="/wishlist" className="block py-1 link-amazon">
+                  Your Lists
+                </Link>
+                <Link href="/returns" className="block py-1 link-amazon">
+                  Your Returns
+                </Link>
+                <Link href="/prime" className="block py-1 link-amazon">
+                  Your Prime Membership
+                </Link>
                 <Link href="/cart" className="block py-1 link-amazon">
                   Your Cart
                 </Link>

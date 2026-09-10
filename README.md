@@ -9,7 +9,8 @@ assignment. Next.js 16 (App Router), React 19, Tailwind 4, NextAuth v5.
 
 ## What works
 
-Every flow below is complete end to end against a real Postgres database.
+Every flow below is complete end to end against a real Postgres database,
+covered by 121 passing assertions across three test suites.
 
 | Flow | Detail |
 |---|---|
@@ -19,10 +20,16 @@ Every flow below is complete end to end against a real Postgres database.
 | **Product detail** | Hover-swap gallery with zoom, buy box, variants, rating histogram, reviews, related items |
 | **Cart** | Guest cart, quantity stepper, save for later, free-shipping progress |
 | **Auth** | Register and sign in; the guest cart merges into your account on sign-in |
-| **Checkout** | Three-step accordion (address → payment → review) with server-recomputed totals |
+| **Checkout** | Address → payment → review, with delivery speeds, promo codes and gift options |
 | **Orders** | History and detail, reading snapshotted line items |
+| **Wishlists** | Add from any product, make the list public, share it by link |
+| **Q&A** | Read questions and answers, ask a question, answer someone else's |
+| **Reviews** | Write one, rate 1–5, vote others helpful; Verified Purchase is earned, not claimed |
+| **Returns** | Request against a delivered line, pick a reason, see the refund; stock is restocked |
+| **Prime** | Join or cancel; membership makes the upgrade shipping tiers free |
 
 Try it with the demo account: `demo@example.com` / `Password123!`
+Promo codes seeded for testing: `SAVE10`, `WELCOME5`, `BIGDEAL20`, `FREESHIP`.
 
 ---
 
@@ -30,27 +37,34 @@ Try it with the demo account: `demo@example.com` / `Password123!`
 
 The brief allows 24 hours and judges *what you chose to build first, and what you
 left out*. Amazon is twenty years of product; attempting all of it produces forty
-broken pages. I chose instead to make the core purchase path genuinely work.
+broken pages. I chose instead to make the customer experience genuinely complete,
+then said no to the rest.
 
 Cut, with reasoning:
 
-- **Prime Video / Music / Alexa / Fresh** — entire separate products. Zero overlap
-  with the purchase flow that makes Amazon *Amazon*.
-- **Seller / marketplace portal** — a second application with its own auth,
-  inventory and payout model. A day's work on its own.
-- **Real payment processing** — Stripe integration is well-understood plumbing.
-  The checkout collects a card and stores only the last four digits; wiring a real
-  processor would demonstrate less than the transactional order placement does.
-- **Recommendation ML** — "customers also bought" here is category similarity.
-  A real recommender needs behavioural data that a seeded catalog does not have.
-- **Returns / A-to-z claims** — post-purchase support flow, not the purchase.
-- **Multi-SKU variants** — variant pickers render and select, but the seeded
-  catalog has one SKU per product, so choosing a colour does not change the price
-  or the cart line. Modelling true variant inventory means a SKU table, per-SKU
-  stock and cart lines keyed by SKU. Visible in the UI, honestly scoped in code.
+- **Seller / marketplace portal** — the biggest honest gap. Amazon is a two-sided
+  marketplace and this rebuild only has the buyer side. A seller app means its own
+  auth role, catalog management, inventory, order fulfilment and payout reporting:
+  a second application, not a section.
+- **Admin console** — catalog moderation, policy enforcement, agent tooling.
+  Internal-only, and CRUD whose value is hard to show in a walkthrough.
+- **Delivery / driver app** — Amazon Flex is mobile-first: route claiming, package
+  scanning, proof-of-delivery photos. Poorly served by a browser rebuild.
+- **Prime Video / Music / Alexa / Fresh** — separate products that happen to share
+  a login. No overlap with the purchase flow.
+- **Real payment processing** — Stripe is well-understood plumbing. Checkout
+  collects a card and stores only the last four digits. The transactional order
+  placement is the part worth demonstrating, and that is real.
+- **Recommendation ML** — "related items" here is category similarity. A real
+  recommender needs behavioural data a seeded catalog does not have.
+- **Multi-SKU variants** — variant pickers render and select, but the catalog has
+  one SKU per product, so choosing a colour does not change price or stock. Doing
+  it properly means a SKU table, per-SKU inventory and cart lines keyed by SKU.
+  Visible in the UI, honestly scoped in the code.
 - **Address book at checkout** — the API supports saved addresses
-  (`/api/addresses`), but checkout uses a single typed-in address rather than a
-  picker.
+  (`/api/addresses`), but checkout types one in rather than offering a picker.
+- **Subscribe & Save, registries, 1-Click, digital content** — conveniences layered
+  on a purchase flow that already works.
 
 ---
 

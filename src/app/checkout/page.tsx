@@ -7,13 +7,23 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Lock } from 'lucide-react';
 import { useCart } from '@/store/cart';
-import { placeOrder } from '@/lib/api';
+import { placeOrder, validateCoupon } from '@/lib/api';
 import { formatPrice, formatDeliveryDate, deliveryEstimate } from '@/lib/utils';
-import type { Address } from '@/lib/types';
+import type { Address, Coupon } from '@/lib/types';
 
 const TAX_RATE = 0.0725;
 const FREE_SHIPPING_THRESHOLD = 3500;
 const SHIPPING_FLAT = 599;
+
+// Mirrors the server's tiers. The server recomputes everything on submit, so
+// these figures are for display only and a mismatch cannot be exploited.
+const SPEEDS = {
+  standard: { label: 'FREE Delivery', detail: 'Arrives in about 6 days', cents: 0, days: 6 },
+  expedited: { label: 'Expedited Delivery', detail: 'Arrives in about 3 days', cents: 899, days: 3 },
+  priority: { label: 'Priority Delivery', detail: 'Arrives tomorrow', cents: 1499, days: 1 },
+} as const;
+
+type Speed = keyof typeof SPEEDS;
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -31,6 +41,12 @@ export default function CheckoutPage() {
   });
   const [card, setCard] = useState('4242 4242 4242 4242');
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [speed, setSpeed] = useState<Speed>('standard');
+  const [promo, setPromo] = useState('');
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [isGift, setIsGift] = useState(false);
+  const [giftMessage, setGiftMessage] = useState('');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,9 +82,13 @@ export default function CheckoutPage() {
   }
 
   const subtotal = cart.subtotal;
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT;
-  const tax = Math.round(subtotal * TAX_RATE);
-  const total = subtotal + shipping + tax;
+  const discount = coupon?.discount ?? 0;
+  const speedCost = SPEEDS[speed].cents;
+  const shipping =
+    speedCost > 0 ? speedCost : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT;
+  const taxable = Math.max(0, subtotal - discount);
+  const tax = Math.round(taxable * TAX_RATE);
+  const total = taxable + shipping + tax;
 
   const addressComplete =
     address.full_name && address.line1 && address.city &&
@@ -80,7 +100,14 @@ export default function CheckoutPage() {
     setError(null);
     try {
       const { order } = await placeOrder(
-        { shipTo: address, paymentLast4: card.replace(/\s/g, '').slice(-4) },
+        {
+          shipTo: address,
+          paymentLast4: card.replace(/\s/g, '').slice(-4),
+          couponCode: coupon?.code,
+          shippingSpeed: speed,
+          isGift,
+          giftMessage: isGift ? giftMessage : undefined,
+        },
         session.apiToken
       );
       await refresh();
@@ -169,8 +196,60 @@ export default function CheckoutPage() {
 
           {/* --- 3. review --- */}
           <Section n={3} title="Review items and shipping" open={step === 3}>
+            <div className="mb-4">
+              <p className="mb-2 text-[14px] font-bold">Choose a delivery speed:</p>
+              <div className="space-y-2">
+                {(Object.keys(SPEEDS) as Speed[]).map((k) => (
+                  <label
+                    key={k}
+                    className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 ${
+                      speed === k
+                        ? 'border-[#e77600] bg-[#fffbf5]'
+                        : 'border-[var(--color-border-grey)]'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="speed"
+                      checked={speed === k}
+                      onChange={() => setSpeed(k)}
+                      className="mt-1"
+                    />
+                    <span className="flex-1">
+                      <span className="block text-[14px] font-bold">
+                        {SPEEDS[k].cents === 0
+                          ? 'FREE Delivery'
+                          : `${formatPrice(SPEEDS[k].cents)} - ${SPEEDS[k].label}`}
+                      </span>
+                      <span className="block text-[13px] text-[var(--color-text-secondary)]">
+                        {SPEEDS[k].detail}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <label className="mb-3 flex cursor-pointer items-center gap-2 text-[14px]">
+              <input
+                type="checkbox"
+                checked={isGift}
+                onChange={(e) => setIsGift(e.target.checked)}
+              />
+              <span>This order contains a gift</span>
+            </label>
+            {isGift && (
+              <textarea
+                value={giftMessage}
+                onChange={(e) => setGiftMessage(e.target.value)}
+                rows={2}
+                placeholder="Add a gift message (optional)"
+                className="input-amazon mb-3 resize-y"
+              />
+            )}
+
             <p className="mb-3 text-[16px] font-bold text-[var(--color-success)]">
-              Delivery: {formatDeliveryDate(deliveryEstimate(shipping === 0))}
+              Delivery: {formatDeliveryDate(deliveryEstimate(SPEEDS[speed].days <= 3))}
             </p>
             <div className="space-y-3">
               {cart.items.map((i) => (
@@ -221,11 +300,73 @@ export default function CheckoutPage() {
             <Lock size={12} /> Secure transaction
           </p>
 
+          <div className="mb-3 border-t border-gray-200 pt-3">
+            <p className="mb-1 text-[13px] font-bold">
+              Gift cards &amp; promotional codes
+            </p>
+            {coupon ? (
+              <div className="flex items-center justify-between rounded border border-[#067D62] bg-[#f0fdf9] p-2 text-[13px]">
+                <span>
+                  <span className="font-bold">{coupon.code}</span> — {coupon.description}
+                </span>
+                <button
+                  onClick={() => {
+                    setCoupon(null);
+                    setPromo('');
+                  }}
+                  className="link-amazon"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <input
+                    value={promo}
+                    onChange={(e) => setPromo(e.target.value)}
+                    placeholder="Enter code"
+                    className="input-amazon"
+                  />
+                  <button
+                    onClick={async () => {
+                      setPromoError(null);
+                      try {
+                        const { coupon: c } = await validateCoupon(promo, subtotal);
+                        setCoupon(c);
+                      } catch (err) {
+                        setPromoError(
+                          err instanceof Error ? err.message : 'Invalid code'
+                        );
+                      }
+                    }}
+                    disabled={!promo.trim()}
+                    className="btn-secondary shrink-0"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {promoError && (
+                  <p className="mt-1 text-[12px] text-[#c40000]">{promoError}</p>
+                )}
+                <p className="mt-1 text-[11px] text-[var(--color-text-secondary)]">
+                  Try SAVE10, WELCOME5 or BIGDEAL20
+                </p>
+              </>
+            )}
+          </div>
+
           <h2 className="mb-2 border-t border-gray-200 pt-3 text-[18px] font-bold">
             Order Summary
           </h2>
           <dl className="space-y-1 text-[14px]">
             <Row label={`Items (${cart.count}):`} value={formatPrice(subtotal)} />
+            {discount > 0 && (
+              <div className="flex justify-between text-[var(--color-success)]">
+                <dt>Promotion applied:</dt>
+                <dd>-{formatPrice(discount)}</dd>
+              </div>
+            )}
             <Row
               label="Shipping & handling:"
               value={shipping === 0 ? 'FREE' : formatPrice(shipping)}

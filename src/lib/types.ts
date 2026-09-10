@@ -29,6 +29,8 @@ export interface Product {
   reviews?: Review[];
   ratingDistribution?: Record<string, number>;
   related?: Product[];
+  questions?: Question[];
+  wishlistItemId?: number;
 }
 
 export interface Review {
@@ -107,6 +109,12 @@ export interface Order {
   paymentLast4: string | null;
   placedAt: string;
   deliveryEstimate: string | null;
+  discount: number;
+  discountFormatted: string;
+  couponCode: string | null;
+  isGift: boolean;
+  giftMessage: string | null;
+  shippingSpeed: string;
   items: OrderItem[];
 }
 
@@ -128,4 +136,49 @@ export interface Pagination {
   perPage: number;
   total: number;
   totalPages: number;
+}
+
+export interface Question {
+  id: number;
+  author: string;
+  body: string;
+  votes: number;
+  createdAt: string;
+  answers: { id: number; author: string; body: string; votes: number }[];
+}
+
+export interface Wishlist {
+  id?: number;
+  name: string;
+  isPublic: boolean;
+  shareSlug?: string;
+  ownerName?: string;
+  items: Product[];
+}
+
+export interface Coupon {
+  code: string;
+  description: string;
+  discount: number;
+  discountFormatted: string;
+}
+
+export interface ReturnRequest {
+  id: number;
+  orderNumber: string;
+  title: string;
+  image: string | null;
+  reason: string;
+  comments: string | null;
+  status: string;
+  refund: number;
+  refundFormatted: string;
+  createdAt: string;
+}
+
+export interface PrimeStatus {
+  isPrime: boolean;
+  since: string | null;
+  priceFormatted: string;
+  benefits: string[];
 }

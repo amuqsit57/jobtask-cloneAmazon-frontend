@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { CheckCircle2 } from 'lucide-react';
 import { getOrder } from '@/lib/api';
+import { ReturnDialog } from '@/components/ReturnDialog';
 import { formatOrderDate } from '@/lib/utils';
 import type { Order } from '@/lib/types';
 
@@ -113,6 +114,12 @@ function OrderDetail() {
             <p className="text-[13px]">
               Card ending in {order.paymentLast4 ?? '••••'}
             </p>
+            {order.isGift && (
+              <p className="mt-2 rounded border border-dashed border-gray-300 p-2 text-[12px]">
+                <span className="font-bold">Gift order.</span>
+                {order.giftMessage && <> &ldquo;{order.giftMessage}&rdquo;</>}
+              </p>
+            )}
           </div>
 
           <div>
@@ -122,6 +129,12 @@ function OrderDetail() {
                 <dt>Item(s) Subtotal:</dt>
                 <dd>{order.subtotalFormatted}</dd>
               </div>
+              {order.discount > 0 && (
+                <div className="flex justify-between text-[var(--color-success)]">
+                  <dt>Promotion ({order.couponCode}):</dt>
+                  <dd>-{order.discountFormatted}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt>Shipping:</dt>
                 <dd>
@@ -170,6 +183,9 @@ function OrderDetail() {
                   <p className="text-[13px] font-bold text-[var(--color-price)]">
                     {i.lineTotalFormatted}
                   </p>
+                </div>
+                <div className="w-48 shrink-0">
+                  <ReturnDialog orderItemId={i.id} title={i.title} />
                 </div>
               </div>
             ))}

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Lock, ChevronDown } from 'lucide-react';
 import { useCart } from '@/store/cart';
+import { WishlistButton } from './WishlistButton';
 import { deliveryEstimate, formatDeliveryDate } from '@/lib/utils';
 import type { Product } from '@/lib/types';
 
@@ -108,9 +109,11 @@ export function BuyBox({ product }: { product: Product }) {
         Buy Now
       </button>
 
-      <p className="flex items-center gap-1 text-[12px] text-[var(--color-text-secondary)]">
+      <p className="mb-3 flex items-center gap-1 text-[12px] text-[var(--color-text-secondary)]">
         <Lock size={12} /> Secure transaction
       </p>
+
+      <WishlistButton productId={product.id} />
 
       <dl className="mt-3 space-y-1 border-t border-gray-200 pt-3 text-[12px]">
         <div className="flex gap-2">

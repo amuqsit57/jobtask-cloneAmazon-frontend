@@ -1,10 +1,16 @@
 import type {
   Cart,
   Category,
+  Coupon,
   Order,
   Pagination,
+  PrimeStatus,
   Product,
   Address,
+  Question,
+  Review,
+  ReturnRequest,
+  Wishlist,
 } from './types';
 
 export const API_BASE =
@@ -160,7 +166,14 @@ export const getOrder = (orderNumber: string, token: string) =>
   request<{ order: Order }>(`/orders/${orderNumber}`, { token });
 
 export const placeOrder = (
-  payload: { shipTo: Address; paymentLast4?: string },
+  payload: {
+    shipTo: Address;
+    paymentLast4?: string;
+    couponCode?: string;
+    isGift?: boolean;
+    giftMessage?: string;
+    shippingSpeed?: string;
+  },
   token: string
 ) =>
   request<{ order: Order }>('/orders', {
@@ -176,5 +189,108 @@ export const createAddress = (address: Address, token: string) =>
   request<{ address: Address }>('/addresses', {
     method: 'POST',
     body: JSON.stringify(address),
+    token,
+  });
+
+// ---- wishlist -------------------------------------------------------------
+
+export const getWishlist = (token: string) =>
+  request<{ wishlist: Wishlist }>('/wishlist', { token });
+
+export const addToWishlist = (productId: number, token: string) =>
+  request<{ items: Product[] }>('/wishlist/items', {
+    method: 'POST',
+    body: JSON.stringify({ productId }),
+    token,
+  });
+
+export const removeFromWishlist = (productId: number, token: string) =>
+  request<{ items: Product[] }>(`/wishlist/items/${productId}`, {
+    method: 'DELETE',
+    token,
+  });
+
+export const updateWishlist = (
+  patch: { name?: string; isPublic?: boolean },
+  token: string
+) =>
+  request<{ wishlist: Wishlist }>('/wishlist', {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+    token,
+  });
+
+export const getSharedWishlist = (slug: string) =>
+  request<{ wishlist: Wishlist }>(`/wishlist/shared/${slug}`);
+
+// ---- questions & answers --------------------------------------------------
+
+export const getQuestions = (productId: number) =>
+  request<{ questions: Question[] }>(`/questions/product/${productId}`);
+
+export const askQuestion = (productId: number, body: string, token: string) =>
+  request<{ question: Question }>(`/questions/product/${productId}`, {
+    method: 'POST',
+    body: JSON.stringify({ body }),
+    token,
+  });
+
+export const answerQuestion = (questionId: number, body: string, token: string) =>
+  request<{ answer: { id: number } }>(`/questions/${questionId}/answers`, {
+    method: 'POST',
+    body: JSON.stringify({ body }),
+    token,
+  });
+
+// ---- reviews --------------------------------------------------------------
+
+export const writeReview = (
+  productId: number,
+  payload: { rating: number; title?: string; body?: string },
+  token: string
+) =>
+  request<{ review: Review }>(`/reviews/product/${productId}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    token,
+  });
+
+export const markHelpful = (reviewId: number, token: string) =>
+  request<{ helpful: number }>(`/reviews/${reviewId}/helpful`, {
+    method: 'POST',
+    token,
+  });
+
+// ---- coupons, prime, returns ----------------------------------------------
+
+export const validateCoupon = (code: string, subtotal: number) =>
+  request<{ coupon: Coupon }>('/coupons/validate', {
+    method: 'POST',
+    body: JSON.stringify({ code, subtotal }),
+  });
+
+export const getPrime = (token: string) =>
+  request<PrimeStatus>('/prime', { token });
+
+export const setPrime = (join: boolean, token: string) =>
+  request<{ isPrime: boolean }>('/prime', {
+    method: 'POST',
+    body: JSON.stringify({ join }),
+    token,
+  });
+
+export const getReturnReasons = () =>
+  request<{ reasons: string[] }>('/returns/reasons');
+
+export const listReturns = (token: string) =>
+  request<{ returns: ReturnRequest[] }>('/returns', { token });
+
+export const requestReturn = (
+  payload: { orderItemId: number; reason: string; comments?: string },
+  token: string
+) =>
+  request<{ return: ReturnRequest }>('/returns', {
+    method: 'POST',
+    body: JSON.stringify(payload),
     token,
   });

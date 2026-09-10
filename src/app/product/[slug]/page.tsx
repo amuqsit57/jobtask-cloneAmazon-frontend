@@ -7,6 +7,9 @@ import { ProductGallery } from '@/components/ProductGallery';
 import { BuyBox } from '@/components/BuyBox';
 import { VariantPicker } from '@/components/VariantPicker';
 import { ProductRail } from '@/components/ProductRail';
+import { QuestionsSection } from '@/components/QuestionsSection';
+import { WriteReview } from '@/components/WriteReview';
+import { HelpfulButton } from '@/components/HelpfulButton';
 import { ApiError } from '@/lib/api';
 import { formatOrderDate } from '@/lib/utils';
 
@@ -190,6 +193,11 @@ export default async function ProductPage({
                   </div>
                 );
               })}
+
+              <div className="mt-4 border-t border-gray-200 pt-4">
+                <p className="mb-2 text-[14px]">Review this product</p>
+                <WriteReview productId={product.id} />
+              </div>
             </div>
 
             <div className="space-y-6">
@@ -214,16 +222,17 @@ export default async function ProductPage({
                     )}
                   </p>
                   <p className="text-[14px] leading-5">{r.body}</p>
-                  {r.helpful > 0 && (
-                    <p className="mt-2 text-[12px] text-[var(--color-text-secondary)]">
-                      {r.helpful} people found this helpful
-                    </p>
-                  )}
+                  <HelpfulButton reviewId={r.id} initial={r.helpful} />
                 </article>
               ))}
             </div>
           </div>
         </section>
+
+        <QuestionsSection
+          productId={product.id}
+          initial={product.questions ?? []}
+        />
 
         {product.related && product.related.length > 0 && (
           <div className="mt-8">
