@@ -3,8 +3,21 @@ node_modules/
 .env.local
 .DS_Store
 
+# --- Next.js ---
+/.next/
+/out/
+/build
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+/coverage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
 # .agent-logs/ ships with this repo as part of the 8x submission.
-# Never ignore it. This negation is deliberate: it survives a framework
-# scaffolder (create-next-app etc.) appending its own rules below.
+# Never ignore it. This negation is deliberate and must stay last so it wins
+# over anything a scaffolder appends above.
 !.agent-logs/
 !.agent-logs/**

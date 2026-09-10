@@ -1,0 +1,180 @@
+import type {
+  Cart,
+  Category,
+  Order,
+  Pagination,
+  Product,
+  Address,
+} from './types';
+
+export const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+
+/**
+ * The guest cart is keyed by an id kept in localStorage, so a visitor can fill a
+ * cart before they have an account. On sign-in this id is handed to /cart/merge
+ * and the guest cart is folded into the user's own.
+ */
+const SESSION_KEY = 'amzn_cart_session';
+
+export function getCartSession(): string {
+  if (typeof window === 'undefined') return '';
+  let id = localStorage.getItem(SESSION_KEY);
+  if (!id) {
+    id = `guest-${crypto.randomUUID()}`;
+    localStorage.setItem(SESSION_KEY, id);
+  }
+  return id;
+}
+
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+type FetchOpts = RequestInit & { token?: string | null };
+
+async function request<T>(path: string, opts: FetchOpts = {}): Promise<T> {
+  const { token, headers, ...rest } = opts;
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...rest,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(typeof window !== 'undefined'
+        ? { 'x-cart-session': getCartSession() }
+        : {}),
+      ...headers,
+    },
+    cache: rest.cache ?? 'no-store',
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new ApiError(body?.error || `Request failed (${res.status})`, res.status);
+  }
+  return body as T;
+}
+
+// ---- catalog --------------------------------------------------------------
+
+export interface ProductQuery {
+  q?: string;
+  category?: string;
+  minPrice?: string | number;
+  maxPrice?: string | number;
+  minRating?: string | number;
+  prime?: boolean;
+  sort?: string;
+  page?: string | number;
+  limit?: string | number;
+}
+
+export function listProducts(params: ProductQuery = {}) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '') qs.set(k, String(v));
+  }
+  return request<{ products: Product[]; pagination: Pagination }>(
+    `/products?${qs}`
+  );
+}
+
+export const getProduct = (slug: string) =>
+  request<{ product: Product }>(`/products/${slug}`);
+
+export const getFeatured = () =>
+  request<{ bestSellers: Product[]; deals: Product[]; topRated: Product[] }>(
+    '/products/featured'
+  );
+
+export const getSuggestions = (q: string) =>
+  request<{ suggestions: { title: string; slug: string }[] }>(
+    `/products/suggest?q=${encodeURIComponent(q)}`
+  );
+
+export const listCategories = () =>
+  request<{ categories: Category[] }>('/categories');
+
+// ---- auth -----------------------------------------------------------------
+
+export const register = (email: string, password: string, name?: string) =>
+  request<{ token: string; user: { id: number; email: string; name: string } }>(
+    '/auth/register',
+    { method: 'POST', body: JSON.stringify({ email, password, name }) }
+  );
+
+export const login = (email: string, password: string) =>
+  request<{ token: string; user: { id: number; email: string; name: string } }>(
+    '/auth/login',
+    { method: 'POST', body: JSON.stringify({ email, password }) }
+  );
+
+// ---- cart -----------------------------------------------------------------
+
+export const getCart = (token?: string | null) =>
+  request<Cart>('/cart', { token });
+
+export const addToCart = (
+  productId: number,
+  quantity = 1,
+  token?: string | null
+) =>
+  request<Cart>('/cart/items', {
+    method: 'POST',
+    body: JSON.stringify({ productId, quantity }),
+    token,
+  });
+
+export const updateCartItem = (
+  id: number,
+  patch: { quantity?: number; savedForLater?: boolean },
+  token?: string | null
+) =>
+  request<Cart>(`/cart/items/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+    token,
+  });
+
+export const removeCartItem = (id: number, token?: string | null) =>
+  request<Cart>(`/cart/items/${id}`, { method: 'DELETE', token });
+
+export const mergeCart = (sessionId: string, token: string) =>
+  request<Cart>('/cart/merge', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId }),
+    token,
+  });
+
+// ---- orders & addresses ---------------------------------------------------
+
+export const listOrders = (token: string) =>
+  request<{ orders: Order[] }>('/orders', { token });
+
+export const getOrder = (orderNumber: string, token: string) =>
+  request<{ order: Order }>(`/orders/${orderNumber}`, { token });
+
+export const placeOrder = (
+  payload: { shipTo: Address; paymentLast4?: string },
+  token: string
+) =>
+  request<{ order: Order }>('/orders', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    token,
+  });
+
+export const listAddresses = (token: string) =>
+  request<{ addresses: Address[] }>('/addresses', { token });
+
+export const createAddress = (address: Address, token: string) =>
+  request<{ address: Address }>('/addresses', {
+    method: 'POST',
+    body: JSON.stringify(address),
+    token,
+  });

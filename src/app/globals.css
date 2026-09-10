@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/**
+ * Amazon design tokens.
+ *
+ * Colours are taken from amazon.com itself rather than approximated: the navy
+ * navigation (#131921), the lighter sub-nav (#232F3E), the orange call to action
+ * (#FFD814 / #FFA41C), the teal link colour (#007185) and the red price colour
+ * (#B12704). Getting these exactly right is most of what makes a clone read as
+ * Amazon at a glance.
+ *
+ * The site is deliberately light-only. Amazon has no dark mode, so honouring
+ * prefers-color-scheme here would make the clone look less like the original.
+ */
+
+@theme {
+  --color-nav: #131921;
+  --color-nav-light: #232f3e;
+  --color-nav-hover: #485769;
+  --color-sub-nav: #37475a;
+
+  --color-amazon-orange: #ff9900;
+  --color-btn-yellow: #ffd814;
+  --color-btn-yellow-hover: #f7ca00;
+  --color-btn-orange: #ffa41c;
+  --color-btn-orange-hover: #fa8900;
+
+  --color-link: #007185;
+  --color-link-hover: #c7511f;
+  --color-price: #b12704;
+  --color-success: #067d62;
+  --color-star: #ffa41c;
+  --color-deal: #cc0c39;
+
+  --color-border-grey: #d5d9d9;
+  --color-bg-grey: #eaeded;
+  --color-bg-light: #f7fafa;
+  --color-text-primary: #0f1111;
+  --color-text-secondary: #565959;
+
+  --font-sans: "Amazon Ember", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: #fff;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Amazon's own focus treatment: an orange ring rather than the browser default. */
+*:focus-visible {
+  outline: 2px solid var(--color-amazon-orange);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+
+@layer components {
+  /* The pill buttons used for Add to Cart / Buy Now. */
+  .btn-amazon {
+    @apply inline-flex items-center justify-center rounded-full border border-[#FCD200]
+           bg-[var(--color-btn-yellow)] px-4 py-2 text-[13px] text-[var(--color-text-primary)]
+           shadow-[0_2px_5px_0_rgba(213,217,217,.5)] transition-colors
+           hover:bg-[var(--color-btn-yellow-hover)] active:bg-[#f0b800]
+           disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-amazon-orange {
+    @apply inline-flex items-center justify-center rounded-full border border-[#FF8F00]
+           bg-[var(--color-btn-orange)] px-4 py-2 text-[13px] text-[var(--color-text-primary)]
+           shadow-[0_2px_5px_0_rgba(213,217,217,.5)] transition-colors
+           hover:bg-[var(--color-btn-orange-hover)];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-[var(--color-border-grey)]
+           bg-white px-4 py-1.5 text-[13px] text-[var(--color-text-primary)]
+           shadow-[0_2px_5px_0_rgba(213,217,217,.5)] transition-colors hover:bg-[#f7fafa];
+  }
+
+  .input-amazon {
+    @apply w-full rounded-[3px] border border-[#a6a6a6] px-2 py-1.5 text-[13px]
+           shadow-[0_1px_2px_rgba(15,17,17,.15)_inset] outline-none
+           focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,.5)];
+  }
+
+  .link-amazon {
+    @apply text-[var(--color-link)] hover:text-[var(--color-link-hover)] hover:underline;
+  }
+
+  /* Header nav items get a 1px border box on hover, like the real site. */
+  .nav-item {
+    @apply flex flex-col justify-center rounded-[2px] border border-transparent px-2 py-1
+           hover:border-white;
+  }
+}
+
+/* Horizontal product rails scroll without a visible scrollbar. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
