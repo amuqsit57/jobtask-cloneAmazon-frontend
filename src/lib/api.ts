@@ -19,8 +19,24 @@ import type {
   AdminOrder,
 } from './types';
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+/**
+ * Normalise the configured API base.
+ *
+ * A trailing slash is the classic deployment footgun here: set the env var to
+ * ".../api/" and every request becomes "//api/products", which the server 404s
+ * with no obvious cause. Stripping it makes both spellings equivalent.
+ *
+ * The /api suffix is appended when missing for the same reason — pasting the
+ * bare service URL out of a hosting dashboard is the natural mistake to make.
+ */
+function normaliseBase(raw: string): string {
+  const trimmed = raw.trim().replace(/\/+$/, '');
+  return /\/api$/.test(trimmed) ? trimmed : trimmed + '/api';
+}
+
+export const API_BASE = normaliseBase(
+  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api'
+);
 
 /**
  * The guest cart is keyed by an id kept in localStorage, so a visitor can fill a

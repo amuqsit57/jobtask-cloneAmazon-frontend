@@ -1,7 +1,11 @@
 node_modules/
-.env
-.env.local
 .DS_Store
+
+# Every env file stays local. Real values live in the host dashboard.
+# .env.example is the only one committed, and it holds placeholders.
+.env
+.env.*
+!.env.example
 
 # --- Next.js ---
 /.next/
