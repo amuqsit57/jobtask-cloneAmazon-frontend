@@ -83,7 +83,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50">
       {/* --- main bar --- */}
-      <div className="flex items-center gap-1 bg-[var(--color-nav)] px-2 py-1.5 text-white">
+      <div className="flex items-center gap-1 bg-nav px-2 py-1.5 text-white">
         <Link href="/" className="nav-item shrink-0" aria-label="Amazon home">
           <AmazonLogo />
         </Link>
@@ -235,20 +235,23 @@ export function Header() {
           className="nav-item shrink-0 flex-row items-end"
           aria-label={`Cart, ${cart.count} items`}
         >
-          {/* The count sits over the cart's basket. Centring on a fixed anchor
-              keeps double-digit counts from drifting off the icon. */}
-          <span className="relative block">
+          {/* Amazon puts the count above the basket, riding the icon's top-right
+              edge rather than sitting inside the basket. Extra top padding on the
+              wrapper gives the number somewhere to live without clipping. */}
+          <span className="relative block pt-2">
             <ShoppingCart size={30} strokeWidth={1.75} />
-            <span className="absolute left-1/2 top-[-2px] min-w-[14px] -translate-x-1/2 text-center text-[14px] font-bold leading-none text-[var(--color-amazon-orange)]">
+            <span className="absolute right-0 top-0 min-w-4 text-center text-[15px] font-bold leading-none text-amazon-orange">
               {cart.count}
             </span>
           </span>
-          <span className="ml-0.5 hidden text-[13px] font-bold sm:inline">Cart</span>
+          <span className="mb-1 ml-0.5 hidden text-[13px] font-bold sm:inline">
+            Cart
+          </span>
         </Link>
       </div>
 
       {/* --- sub nav --- */}
-      <nav className="flex items-center gap-1 overflow-x-auto bg-[var(--color-nav-light)] px-2 py-1 text-[13px] text-white no-scrollbar">
+      <nav className="flex items-center gap-1 overflow-x-auto bg-nav-light px-2 py-1 text-[13px] text-white no-scrollbar">
         <button
           onClick={() => setMenuOpen(true)}
           className="nav-item flex-row items-center gap-1 whitespace-nowrap font-bold"
@@ -276,7 +279,7 @@ export function Header() {
             className="h-full w-[85vw] max-w-sm overflow-y-auto bg-white"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-[var(--color-nav-light)] px-6 py-3 text-[18px] font-bold text-white">
+            <div className="bg-nav-light px-6 py-3 text-[18px] font-bold text-white">
               Hello, {name ?? 'sign in'}
             </div>
             <div className="p-4">
