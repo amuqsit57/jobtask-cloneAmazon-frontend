@@ -121,7 +121,9 @@ export function Header() {
               onFocus={() => setShowSuggest(true)}
               placeholder="Search Amazon"
               aria-label="Search Amazon"
-              className="min-w-0 flex-1 px-3 text-[15px] text-black outline-none"
+              // The field needs its own white background: without one it is
+              // transparent over the navy header, leaving dark text on dark.
+              className="min-w-0 flex-1 bg-white px-3 text-[15px] text-[var(--color-text-primary)] placeholder:text-[#6b7280] outline-none"
             />
 
             <button
@@ -134,7 +136,7 @@ export function Header() {
           </form>
 
           {showSuggest && suggestions.length > 0 && (
-            <ul className="absolute inset-x-0 top-full z-50 border border-[#d5d9d9] bg-white text-[14px] text-black shadow-lg">
+            <ul className="absolute inset-x-0 top-full z-50 border border-[#d5d9d9] bg-white text-[14px] text-[var(--color-text-primary)] shadow-lg">
               {suggestions.map((s) => (
                 <li key={s.slug}>
                   <Link
@@ -162,7 +164,7 @@ export function Header() {
             </span>
           </button>
 
-          <div className="invisible absolute right-0 top-full w-56 border border-[#d5d9d9] bg-white p-3 text-[13px] text-black opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
+          <div className="invisible absolute right-0 top-full w-56 border border-[#d5d9d9] bg-white p-3 text-[13px] text-[var(--color-text-primary)] opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100">
             {session ? (
               <>
                 <p className="mb-2 border-b pb-2 font-bold">
